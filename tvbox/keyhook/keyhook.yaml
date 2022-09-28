@@ -1,0 +1,7 @@
+shell: "/system/bin/sh"
+device: "/dev/input/event0"
+hooks:
+  - key: "0002 0066 00000000"
+    cmd: "am start com.dangbei.tvlauncher"
+  - key: "0001 01d4 00000001"
+    cmd: "am start com.dangbei.tvlauncher"
