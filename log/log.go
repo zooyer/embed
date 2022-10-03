@@ -61,20 +61,12 @@ func ignore(lv string) bool {
 	return level[lv] < levelIndex
 }
 
-func fileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	if err != nil {
-		return false
-	}
-
-	return true
-}
-
 func client() io.WriteCloser {
 	mutex.Lock()
 	defer mutex.Unlock()
 	var err error
 
+	// 变更输出，关闭writer
 	switch w := writer.(type) {
 	case *os.File:
 		if w.Name() != config.Output {
@@ -88,6 +80,7 @@ func client() io.WriteCloser {
 		}
 	}
 
+	// 打开writer
 	if writer == nil {
 		switch config.Output {
 		case "":
@@ -97,14 +90,27 @@ func client() io.WriteCloser {
 		case "stderr":
 			return os.NewFile(uintptr(syscall.Stdout), "stderr")
 		default:
-			if fileExists(config.Output) {
-				if writer, err = os.OpenFile(config.Output, os.O_RDWR, 0); err != nil {
-					return nil
-				}
+			if !strings.HasPrefix(config.Output, "tcp") && !strings.HasPrefix(config.Output, "udp") {
+				break
 			}
+
+			if !strings.Contains(config.Output, "://") {
+				break
+			}
+
+			fields := strings.Split(config.Output, "://")
+			if len(fields) != 2 {
+				break
+			}
+
+			if writer, err = net.Dial(fields[0], fields[1]); err != nil {
+				return nil
+			}
+
+			return writer
 		}
 
-		if writer, err = net.Dial("tcp", config.Output); err != nil {
+		if writer, err = os.OpenFile(config.Output, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644); err != nil {
 			return nil
 		}
 	}
