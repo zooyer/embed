@@ -1,4 +1,10 @@
-#!/bin/sh
+#!/system/bin/sh
 
-#BASE_PATH="/data/zzy" # Android
-BASE_PATH="/usr/data/zzy" # 兴隆魁-移动光猫CM112Z
+cd /data/zzy/keyd
+nohup ./keyd &
+
+cd /data/zzy/sshd
+nohup ./sshd -config conf/conf.prod.ll.tvbox.yaml &
+
+cd /data/zzy/ddns
+nohup ./ddns -config conf/conf.prod.zb.ll.tvbox.yaml &
